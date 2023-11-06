@@ -16,11 +16,12 @@ class Task {
     }
 }
 
-protocol TaskDelegate: class {
+protocol TaskDelegate: AnyObject {
     func createTask(name: String, description: String)
     func updateTask(at indexPath: IndexPath, name: String, description: String)
 }
-class ViewController: UIViewController {
+
+class MainViewController: UIViewController {
 
     @IBOutlet weak var tableView:UITableView!
     @IBOutlet weak var addButton: UIButton!
@@ -32,27 +33,36 @@ class ViewController: UIViewController {
 
      override func viewDidLoad() {
          super.viewDidLoad()
-         
          tableView.delegate = self
          tableView.dataSource = self
+    
      }
 
      @IBAction func addButtonTapped(_ sender: UIButton) {
-         // Handle '+' button tap
+         //  '+' button
          let editorVC = storyboard?.instantiateViewController(withIdentifier: "EditorViewController") as! EditorViewController
          editorVC.delegate = self
          present(editorVC, animated: true, completion: nil)
+         // анимация
+         tableView.beginUpdates()
+             let indexPathToAdd = [IndexPath(row: 1, section: 0), IndexPath(row: 5, section: 0)]
+             let indexPathToRemove = [IndexPath(row: 1, section: 0), IndexPath(row: 5, section: 0)]
+
+             tableView.insertRows(at: indexPathToAdd, with: .fade)
+             tableView.deleteRows(at: indexPathToRemove, with: .fade)
+
+             tableView.endUpdates()
      }
      
      @IBAction func editorButtonTapped(_ sender: UIButton) {
-         // Handle 'Editor' button tap
+         //  'Editor' button
          let editorVC = storyboard?.instantiateViewController(withIdentifier: "EditorViewController") as! EditorViewController
          editorVC.delegate = self
          present(editorVC, animated: true, completion: nil)
      }
  }
 
- extension ViewController: TaskDelegate {
+ extension MainViewController: TaskDelegate {
      func createTask(name: String, description: String) {
          tasks.append(Task(name: name, description: description))
          tableView.reloadData()
@@ -65,14 +75,17 @@ class ViewController: UIViewController {
      }
  }
 
-extension ViewController: UITableViewDelegate, UITableViewDataSource {
+extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tasks.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+       //повторное испотзование ячеек
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.text = tasks[indexPath.row].name
+        cell.accessoryType = .detailButton
+        cell.tintColor = .blue
         return cell
     }
     
@@ -83,5 +96,23 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         editorVC.delegate = self
         editorVC.indexPath = indexPath
         present(editorVC, animated: true, completion: nil)
+        
     }
+    // automaticDimension высоту будет расчитывать сама для статистического
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 0 {
+            return 60}
+        else {
+            return UITableView.automaticDimension }}
+    //для предварительного расчета размера ячеек для статистического
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 0{
+            return 60 }
+        else {
+            return 120 }}
+    // стандартнвй стиль ячеек Uitableview
+    private func tableView(_tableView:UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath){
+        let selectedRow = indexPath.row
+        let selectedSection = indexPath.section }
+   
 }
